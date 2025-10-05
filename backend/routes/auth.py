@@ -1,8 +1,6 @@
 import logging
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from pydantic import BaseModel
 import redis.asyncio as redis
 from telethon.errors import SessionPasswordNeededError, PhoneCodeInvalidError, FloodWaitError, PasswordHashInvalidError
 from schemas.requests import PhoneRequest, CodeVerifyRequest, TwoFAVerifyRequest
@@ -10,7 +8,6 @@ from app.telegram_client import TelegramAuthClient
 from app.database import get_db
 from app.redis_client import get_redis
 from app.crud import get_or_create_user
-from app import models
 from utils import security
 from utils.limiter import limiter
 
