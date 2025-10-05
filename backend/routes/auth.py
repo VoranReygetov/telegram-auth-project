@@ -20,7 +20,7 @@ CODE_HASH_TTL_SECONDS = 300
 
 @router.post("/send-code")
 @limiter.limit("5/minute")
-async def send_code(data: PhoneRequest, redis_client: redis.Redis = Depends(get_redis)):
+async def send_code(request: Request, data: PhoneRequest, redis_client: redis.Redis = Depends(get_redis)):
     """
     Send a verification code to the given phone number and store phone_code_hash in Redis.
     """
@@ -40,6 +40,7 @@ async def send_code(data: PhoneRequest, redis_client: redis.Redis = Depends(get_
 @router.post("/verify-code")
 @limiter.limit("10/minute")
 async def verify_code(
+    request: Request,
     data: CodeVerifyRequest,
     db: AsyncSession = Depends(get_db),
     redis_client: redis.Redis = Depends(get_redis)
@@ -77,6 +78,7 @@ async def verify_code(
 @router.post("/verify-2fa")
 @limiter.limit("5/minute")
 async def verify_2fa(
+    request: Request,
     data: TwoFAVerifyRequest,
     db: AsyncSession = Depends(get_db),
     redis_client: redis.Redis = Depends(get_redis)
