@@ -1,7 +1,9 @@
 import logging
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from routes import auth
 from .config import settings
@@ -36,6 +38,15 @@ app.add_middleware(
 
 # Include auth routes
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
+
+@app.exception_handler(RateLimitExceeded)
+async def ratelimit_exceeded_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=429,
+        content={
+            "detail": f"Too many requests. Wait for {exc.detail}"
+        }
+    )
 
 # Root endpoint
 @app.get("/")

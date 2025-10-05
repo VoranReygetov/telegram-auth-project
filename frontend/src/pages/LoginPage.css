@@ -77,3 +77,13 @@ button:not(:disabled):hover {
 .success-message {
     color: #1e8e3e;
 }
+
+.input-error {
+  border: 1px solid red;
+}
+
+.error-message {
+  color: red;
+  font-size: 0.9em;
+  margin-top: 5px;
+}

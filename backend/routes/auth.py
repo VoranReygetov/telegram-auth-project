@@ -10,17 +10,27 @@ from app.redis_client import get_redis
 from app.crud import get_or_create_user
 from utils import security
 from utils.limiter import limiter
+import phonenumbers
 
 logger = logging.getLogger("uvicorn")
 router = APIRouter()
 CODE_HASH_TTL_SECONDS = 300
 
 @router.post("/send-code")
-@limiter.limit("5/minute")
+@limiter.limit("2/minute")
 async def send_code(request: Request, data: PhoneRequest, redis_client: redis.Redis = Depends(get_redis)):
     """
     Send a verification code to the given phone number and store phone_code_hash in Redis.
     """
+    phone_number = phonenumbers.parse(data.phone)
+    
+    if not phonenumbers.is_valid_number(phone_number):
+        logger.warning(f"Invalid phone number format provided: {data.phone}")
+        raise HTTPException(
+            status_code=400, 
+            detail="The phone number is not in a valid international format or is incorrect."
+        )
+    
     client = TelegramAuthClient()
     try:
         phone_code_hash = await client.send_code(data.phone, redis_client)
@@ -35,7 +45,7 @@ async def send_code(request: Request, data: PhoneRequest, redis_client: redis.Re
         raise HTTPException(status_code=400, detail="Failed to send verification code.")
 
 @router.post("/verify-code")
-@limiter.limit("10/minute")
+@limiter.limit("3/minute")
 async def verify_code(
     request: Request,
     data: CodeVerifyRequest,
